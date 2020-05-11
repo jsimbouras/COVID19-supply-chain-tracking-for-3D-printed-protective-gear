@@ -1,6 +1,23 @@
 @import "config";
 
+.landingPage:before {
+    z-index: -2;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    content: "";
+    width: 100vw;
+    height: 100vh;
+    background-image: url("../img/landingBack.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    opacity: 0.8;
+    transform: scale(-1, -1);
+}
 .landingPage {
+    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -9,10 +26,10 @@
     height: 100vh;
     font-size: 6vw;
     font-weight: bold;
-    background-image: url("../img/landingBack.png");
-    background-repeat: no-repeat;
-    background-size: cover;
-    color: $white;
+    background: none;
+    color: $grey;
+    text-shadow: 2px 2px $white;
+    position: relative;
     .title {
         display: flex;
         text-align: center;

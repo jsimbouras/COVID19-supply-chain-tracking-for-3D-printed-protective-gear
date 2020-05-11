@@ -1,26 +1,35 @@
 import { boxConstants, authConstants } from "../constants";
 
-const initialState = {profile: {}, inProgress: false, loggedIn: false}
+const initialState = {
+    profile: {},
+    inProgress: false,
+    loggedIn: false,
+    data: {}
+};
 export function box(state = initialState, action) {
     switch (action.type) {
-        case boxConstants.BOX_STARTED:
+        case boxConstants.STARTED:
             return {
                 ...state,
                 inProgress: true
             };
-        case boxConstants.BOX_LOADED:
+        case boxConstants.LOADED:
             return {
                 ...state,
                 inProgress: false,
-                ...action
+                ...action,
+                data: {
+                    ...state.data,
+                    ...action.data
+                }
             };
-        case boxConstants.BOX_CLEAN:
+        case boxConstants.CLEAN:
             return {
                 ...state,
                 inProgress: false,
-                data: undefined
+                data: {}
             };
-        case boxConstants.BOX_ERROR:
+        case boxConstants.ERROR:
             return {
                 ...state,
                 inProgress: false,

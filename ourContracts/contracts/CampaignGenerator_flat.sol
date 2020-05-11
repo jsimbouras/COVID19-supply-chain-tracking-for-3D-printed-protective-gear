@@ -1061,6 +1061,7 @@ contract CampaignGenerator is Ownable, Roles, Storage {
         batch.manufacturer = _manufacturer;
         campaigns[_campaignId].belongsToBatch[_manufacturer].push(batchId);
 
+        campaigns[_campaignId].belongsToBatch[_msgSender()].push(batchId);
         emit PLAPacked(_campaignId, batchId);
     }
 

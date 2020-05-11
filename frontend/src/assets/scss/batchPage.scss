@@ -1,24 +1,6 @@
 @import "config";
 
 .batchPageInner {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 2vw;
-    width: 96vw;
-    height: 100vh;
-    overflow-x: hidden;
-    .back {
-        a {
-            text-decoration: none;
-            color: $grey;
-        }
-        justify-self: flex-start;
-        align-self: flex-start;
-        margin: 2vw;
-        font-size: 8vw;
-    }
     .titleBar {
         padding: 2vw;
         display: flex;

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { contractActions, boxActions, authActions } from "../../actions";
+import { history } from "../../helpers";
 
 class LoginPage extends React.Component {
     constructor(props) {
@@ -23,6 +24,13 @@ class LoginPage extends React.Component {
         this.setState({
             [name]: value
         });
+    }
+
+    componentDidUpdate(prevProps) {
+        const { inProgress, loggedIn } = this.props;
+        if (!inProgress && loggedIn) {
+            history.push("/home");
+        }
     }
 
     handleEnter(e) {
@@ -50,12 +58,11 @@ class LoginPage extends React.Component {
     render() {
         const { inProgress, account } = this.props;
         const { submitted } = this.state;
+
         return (
             <div className="loginPage page">
-                <div className="loginPageInner">
-                    <div className="title">
-                        Login
-                    </div>
+                <div className="loginPageInner pageInner">
+                    <div className="title">Login</div>
                     <div className="loginForm form">
                         <span className="label">Account</span>
                         <input
@@ -91,11 +98,12 @@ class LoginPage extends React.Component {
 
 function mapState(state) {
     const { account } = state.web3;
-    let inProgress =
+    const { loggedIn } = state.box;
+    const inProgress =
         state.web3.inProgress ||
         state.box.inProgress ||
         state.contract.inProgress;
-    return { inProgress, account };
+    return { inProgress, account, loggedIn };
 }
 
 const actionCreators = {

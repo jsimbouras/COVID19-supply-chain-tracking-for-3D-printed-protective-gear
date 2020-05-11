@@ -1,25 +1,6 @@
 @import 'config';
 
-.loginPage {
-    position: relative;
-    z-index: 5;
-}
-
 .loginPageInner {
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    padding-left: 4vw;
-    padding-right: 4vw;
-    padding-top: 5vh;
-    height: 100vh;
-    width: 92vw;
-    .title {
-        width: 100%;
-        font-size: 9vw;
-    }
     .account {
         font-size: 3vw;
     }

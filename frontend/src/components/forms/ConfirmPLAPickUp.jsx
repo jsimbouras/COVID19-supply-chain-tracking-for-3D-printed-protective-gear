@@ -1,8 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { contractConstants } from "../../constants";
-import { contractActions, alertActions } from "../../actions";
-import QrReader from "react-qr-reader";
+import { contractActions, qrCodeActions, alertActions } from "../../actions";
 import { getQRValue } from "../../helpers";
 
 class ConfirmPLAPickUp extends React.Component {
@@ -18,33 +16,26 @@ class ConfirmPLAPickUp extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleEnter = this.handleEnter.bind(this);
         this.clearForm = this.clearForm.bind(this);
-        this.handleScan = this.handleScan.bind(this);
-        this.handleError = this.handleError.bind(this);
-        this.toggleScanner = this.toggleScanner.bind(this);
     }
 
-    handleScan(data) {
-        if (data) {
-            this.props.success("Scanned QR Code: " + data);
+    componentDidMount() {
+        this.props.cleanScanner();
+    }
+
+    static getDerivedStateFromProps(nextProps) {
+        if (nextProps.qrData) {
             try {
-                let { campaignId, batchId } = getQRValue(data);
-                this.setState({
+                let { campaignId, batchId } = getQRValue(nextProps.qrData);
+                return {
                     campaignId,
                     batchId,
-                    showScanner: !this.state.showScanner
-                });
+                    submitted: false
+                };
             } catch (e) {
                 this.props.error(e.toString());
             }
         }
-    }
-
-    toggleScanner() {
-        this.setState({ showScanner: !this.state.showScanner });
-    }
-
-    handleError(err) {
-        this.props.error("QR Scanner Error: " + err.toString());
+        return null;
     }
 
     clearForm(event) {
@@ -125,19 +116,10 @@ class ConfirmPLAPickUp extends React.Component {
                         </a>
                     </div>
                 </div>
-                <div className="display">
-                    {showScanner ? (
-                        <QrReader
-                            delay={300}
-                            onError={this.handleError}
-                            onScan={this.handleScan}
-                            style={{ width: "100%" }}
-                        />
-                    ) : (
-                        <a href="#" onClick={this.toggleScanner}>
-                            Scan QR Code
-                        </a>
-                    )}
+                <div className="qrScan">
+                    <a href="#" onClick={this.props.toggleScanner}>
+                        Scan QR Code
+                    </a>
                 </div>
             </div>
         );
@@ -145,12 +127,14 @@ class ConfirmPLAPickUp extends React.Component {
 }
 
 function mapState(state) {
-    return {};
+    const qrData = state.qrCode.data;
+    return { qrData };
 }
 
 const actionCreators = {
     confirmPLAPickedUp: contractActions.confirmPLAPickedUp,
-    success: alertActions.success,
+    toggleScanner: qrCodeActions.toggle,
+    cleanScanner: qrCodeActions.clean,
     error: alertActions.error
 };
 

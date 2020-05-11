@@ -1,5 +1,5 @@
 export const web3Constants = {
-    WEB3_STARTED: "WEB3_STARTED",
-    WEB3_LOADED: "WEB3_LOADED",
-    WEB3_ERROR: "WEB3_ERROR",
+    STARTED: "WEB3_STARTED",
+    LOADED: "WEB3_LOADED",
+    ERROR: "WEB3_ERROR",
 };

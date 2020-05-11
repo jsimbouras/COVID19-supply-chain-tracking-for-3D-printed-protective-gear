@@ -2,19 +2,19 @@ import { web3Constants } from "../constants";
 
 export function web3(state = {account: ""}, action) {
     switch (action.type) {
-        case web3Constants.WEB3_STARTED:
+        case web3Constants.STARTED:
             return {
                 ...state,
                 inProgress: true
             };
-        case web3Constants.WEB3_LOADED:
+        case web3Constants.LOADED:
             return {
                 ...state,
                 inProgress: false,
                 connected: true,
                 ...action
             };
-        case web3Constants.WEB3_ERROR:
+        case web3Constants.ERROR:
             return {
                 ...state,
                 inProgress: false,

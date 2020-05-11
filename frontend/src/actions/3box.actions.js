@@ -1,7 +1,6 @@
 import Box from "3box";
 import { alertActions } from "./";
 import { boxConstants } from "../constants";
-import { history } from "../helpers";
 
 export const boxActions = {
     login,
@@ -27,7 +26,6 @@ function login(account) {
         //}
         dispatch(loaded({ box, space, loggedIn: true }));
         dispatch(alertActions.success("Login with 3Box Successful"));
-        history.push("/home");
     };
 }
 
@@ -68,27 +66,27 @@ function getProfiles(accounts) {
 function clean() {
     return dispatch => {
         dispatch({
-            type: boxConstants.BOX_CLEAN
+            type: boxConstants.CLEAN
         });
     };
 }
 
 function started() {
     return {
-        type: boxConstants.BOX_STARTED
+        type: boxConstants.STARTED
     };
 }
 
 function loaded(box) {
     return {
-        type: boxConstants.BOX_LOADED,
+        type: boxConstants.LOADED,
         ...box
     };
 }
 
 function failure(error) {
     return {
-        type: boxConstants.BOX_ERROR,
+        type: boxConstants.ERROR,
         error
     };
 }

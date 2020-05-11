@@ -56,9 +56,13 @@ function loadNetwork() {
 }
 
 function loadWeb3() {
-    return async dispatch => {
+    return async (dispatch, getState) => {
         dispatch(started());
-        let web3;
+        let { web3 } = getState().web3;
+        if (web3) {
+            dispatch(loaded({}));
+            return;
+        }
         if (window.ethereum) {
             web3 = new Web3(window.ethereum);
             await window.ethereum.enable();
@@ -117,20 +121,20 @@ function loadWeb3() {
 
 function started() {
     return {
-        type: web3Constants.WEB3_STARTED
+        type: web3Constants.STARTED
     };
 }
 
 function loaded(web3) {
     return {
-        type: web3Constants.WEB3_LOADED,
+        type: web3Constants.LOADED,
         ...web3
     };
 }
 
 function failure(error) {
     return {
-        type: web3Constants.WEB3_ERROR,
+        type: web3Constants.ERROR,
         error
     };
 }

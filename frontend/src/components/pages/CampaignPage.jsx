@@ -1,22 +1,20 @@
 import React from "react";
 import { connect } from "react-redux";
 import { contractActions, web3Actions } from "../../actions";
-import { history } from "../../helpers";
 import { Icon, InlineIcon } from "@iconify/react";
 import gearIcon from "@iconify/icons-octicon/gear";
 import peopleIcon from "@iconify/icons-eva/people-fill";
 import detailsIcon from "@iconify/icons-ic/baseline-assignment";
 import arrowDownIcon from "@iconify/icons-dashicons/arrow-down-alt2";
 import tempProfile from "../../assets/img/profile.webp";
-import * as Displays from "./displays";
+import * as Displays from "../displays";
 
 class CampaignPage extends React.Component {
     constructor(props) {
         super(props);
         this.campaignId = this.props.match.params.id;
         this.state = {
-            loaded: false,
-            selected: 0
+            selected: 1
         };
     }
 
@@ -26,31 +24,19 @@ class CampaignPage extends React.Component {
 
     async init() {
         this.props.clean();
-        //TODO: remove this extra call
         await this.props.loadWeb3();
         await this.props.getCampaignDetails(this.campaignId);
-        this.setState({ loaded: true });
     }
 
     render() {
-        const { campaign, inProgress } = this.props;
+        const { campaign } = this.props;
         const title = "Hellas covid19";
         const description = "We are making masks everwhere, yes we are!";
-        const status = 50;
 
         return (
             <div className="campaignPage page">
-                {this.state.loaded && !inProgress && campaign && (
-                    <div className="campaignPageInner">
-                        <div
-                            className="back"
-                            onClick={() => {
-                                //history.goBack();
-                            }}
-                            style={{opacity: 0}}
-                        >
-                            <span>{"\u2190"}</span>
-                        </div>
+                {campaign && (
+                    <div className="campaignPageInner pageInner">
                         <div className="topBar">
                             <div className="photo">
                                 <div className="photoInner">
@@ -61,11 +47,13 @@ class CampaignPage extends React.Component {
                                 <span className="data">
                                     {campaign.totalPLA}
                                 </span>
-                                <span className="label">Goal</span>
+                                <span className="label">Total</span>
                             </div>
                             <div className="status">
-                                <span className="data">{status}</span>
-                                <span className="label">Status</span>
+                                <span className="data">
+                                    {campaign.totalPLA - campaign.currentPLA}
+                                </span>
+                                <span className="label">Packed</span>
                             </div>
                         </div>
                         <div className="titleBar">
@@ -129,7 +117,10 @@ class CampaignPage extends React.Component {
                                         : "tabDataInner"
                                 }
                             >
-                                <Displays.CampaignDetails campaign={campaign} />
+                                <Displays.CampaignDetails
+                                    campaignId={this.campaignId}
+                                    campaign={campaign}
+                                />
                             </div>
                             <div
                                 className={
@@ -149,8 +140,8 @@ class CampaignPage extends React.Component {
 }
 
 function mapState(state) {
-    const { campaign, inProgress } = state.contract;
-    return { campaign, inProgress };
+    const { campaign } = state.contract.data;
+    return { campaign };
 }
 
 const actionCreators = {

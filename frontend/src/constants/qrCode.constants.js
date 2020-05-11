@@ -1,5 +1,5 @@
 export const qrCodeConstants = {
-    QRCODE_DATA: "QRCODE_DATA",
-    QRCODE_CLEAR: "QRCODE_CLEAR",
-    QRCODE_TOGGLE: "QRCODE_TOGGLE"
+    DATA: "QRCODE_DATA",
+    CLEAR: "QRCODE_CLEAR",
+    TOGGLE: "QRCODE_TOGGLE"
 };

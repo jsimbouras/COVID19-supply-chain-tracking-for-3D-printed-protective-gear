@@ -31,15 +31,17 @@ class NavBar extends React.Component {
                                 </Link>
                             </div>
                             <div className="barIconContainer">
-                                <Link to="/home">
+                                <Link to="/search">
                                     <Icon className="barIcon" icon={searchIcon} />
                                 </Link>
                             </div>
                             <div className="barIconContainer plus">
-                                <span>{"\uFF0B"}</span>
+                                <Link to="/actions">
+                                    <span>{"\uFF0B"}</span>
+                                </Link>
                             </div>
                             <div className="barIconContainer">
-                                <Link to="/profile">
+                                <Link to="/chat">
                                     <Icon className="barIcon" icon={chatIcon} />
                                 </Link>
                             </div>

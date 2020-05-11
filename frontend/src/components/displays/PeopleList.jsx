@@ -1,8 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
-import { boxActions } from "../../../actions";
-import { getImageUrl, getAccountString } from "../../../helpers";
-import tempProfile from "../../../assets/img/profile.webp";
+import { boxActions } from "../../actions";
+import { getImageUrl, getAccountString } from "../../helpers";
+import tempProfile from "../../assets/img/profile.webp";
 
 class PeopleList extends React.Component {
     constructor(props) {
@@ -12,14 +12,13 @@ class PeopleList extends React.Component {
     async loadContent() {
         this.props.clean();
         const { campaign } = this.props;
-        this.accounts = [
+        let accounts = [
             campaign.coordinator,
             campaign.receiver,
             ...campaign.couriers,
             ...campaign.manufacturers
         ];
-
-        await this.props.getProfiles(this.accounts);
+        await this.props.getProfiles(accounts);
     }
 
     componentDidMount() {
@@ -27,16 +26,22 @@ class PeopleList extends React.Component {
     }
 
     render() {
-        const { campaign, data } = this.props;
+        const { campaign, profiles } = this.props;
+        let accounts = [
+            campaign.coordinator,
+            campaign.receiver,
+            ...campaign.couriers,
+            ...campaign.manufacturers
+        ];
         const numCouriers = campaign.couriers.length;
         return (
             <div className="peopleList">
-                {data &&
-                    data.profiles.map((profile, index) => (
+                {campaign && profiles &&
+                    profiles.map((profile, index) => (
                         <Person
                             key={index.toString()}
                             profile={profile}
-                            account={this.accounts[index]}
+                            account={accounts[index]}
                             role={
                                 index > 1
                                     ? index <= numCouriers + 1
@@ -59,7 +64,7 @@ function Person(props) {
         <div className="person">
             <div className="photo">
                 <div className="photoInner">
-                    {profile.image ? (
+                    {profile.image && profile.image.length >= 1 ? (
                         <img src={getImageUrl(profile.image)} />
                     ) : (
                         <img src={tempProfile} />
@@ -77,8 +82,8 @@ function Person(props) {
 }
 
 function mapState(state) {
-    const { data } = state.box;
-    return { data };
+    const { profiles } = state.box.data;
+    return { profiles };
 }
 
 const actionCreators = {

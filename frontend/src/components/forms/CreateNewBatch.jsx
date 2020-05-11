@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import DatePicker from "react-datepicker";
 import { connect } from "react-redux";
 import { contractActions } from "../../actions";
-import QRCode from "qrcode";
-import { getQRString } from "../../helpers";
+import { getQRString, history } from "../../helpers";
 
 class CreateNewBatch extends React.Component {
     constructor(props) {
@@ -105,6 +104,13 @@ class CreateNewBatch extends React.Component {
         }
     }
 
+    componentDidUpdate(prevProps) {
+        const { newCampaignId, newBatchId } = this.props;
+        if (newBatchId && newCampaignId) {
+            history.push("/batch/" + newCampaignId + "/" + newBatchId);
+        }
+    }
+
     render() {
         const {
             campaignId,
@@ -119,7 +125,6 @@ class CreateNewBatch extends React.Component {
         } = this.state.batch;
         let currentTime = new Date().getTime() / 1000;
         const { submitted } = this.state;
-        const { newBatchId, inProgress } = this.props;
         return (
             <div className="createNewBatch form">
                 <span className="label">Campaign ID</span>
@@ -261,55 +266,15 @@ class CreateNewBatch extends React.Component {
                         </a>
                     </div>
                 </div>
-                {!inProgress && submitted && newBatchId ? (
-                    <QRDisplay
-                        batchId={newBatchId}
-                        campaignId={campaignId}
-                    />
-                ) : (
-                    null
-                )}
-            </div>
-        );
-    }
-}
-
-class QRDisplay extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            loaded: false,
-            dataURI: ""
-        };
-    }
-    async componentDidMount() {
-        const qrString = getQRString(this.props.campaignId, this.props.batchId);
-        const dataURI = await QRCode.toDataURL(qrString);
-        this.setState({ loaded: true, dataURI });
-    }
-
-    render() {
-        return (
-            <div className="qrDisplay display">
-                <span className="label">Campaign ID</span>
-                <p className="data">{this.props.campaignId}</p>
-                <span className="label">Batch ID</span>
-                <p className="data">{this.props.batchId}</p>
-                {this.state.loaded ? (
-                    <img
-                        className="qrcode"
-                        alt="qrcode"
-                        src={this.state.dataURI}
-                    />
-                ) : null}
             </div>
         );
     }
 }
 
 function mapState(state) {
-    const { newBatchId, inProgress } = state.contract;
-    return { newBatchId, inProgress };
+    const { data, inProgress } = state.contract;
+    const { newCampaignId, newBatchId } = data;
+    return { newCampaignId, newBatchId, inProgress };
 }
 
 const actionCreators = {

@@ -13,7 +13,7 @@ export const qrCodeActions = {
 function toggle() {
     return async (dispatch, getState) => {
         dispatch({
-            type: qrCodeConstants.QRCODE_TOGGLE
+            type: qrCodeConstants.TOGGLE
         });
     };
 }
@@ -21,7 +21,7 @@ function toggle() {
 function data() {
     return async (dispatch, getState) => {
         dispatch({
-            type: qrCodeConstants.QRCODE_DATA,
+            type: qrCodeConstants.DATA,
             data
         });
     };
@@ -30,7 +30,7 @@ function data() {
 function clean() {
     return async (dispatch, getState) => {
         dispatch({
-            type: qrCodeConstants.QRCODE_CLEAR
+            type: qrCodeConstants.CLEAR
         });
     };
 }

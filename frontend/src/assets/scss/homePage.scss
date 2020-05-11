@@ -1,4 +1,105 @@
+@import "config";
 
 .homePageInner {
-    overflow-y: scroll;
+    font-size: 4vw;
+    .title {
+        width: 94vw !important;
+        padding-left: 5vw;
+        padding-bottom: 2vw;
+        border-style: none none solid none;
+        border-width: 1px;
+        border-color: $grey_;
+    }
+    .campaign {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        width: 96vw;
+        padding-top: 4vw;
+
+        border-style: none none solid none;
+        border-width: 1px;
+        border-color: $grey;
+        .inner {
+            color: $grey_8;
+            width: 92vw;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .links {
+            padding-bottom: 2vw;
+            width: 92vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            a,
+            span {
+                text-decoration: none;
+                color: $grey;
+                font-weight: bold;
+                margin-top: 2vw;
+                font-size: 3.5vw;
+            }
+        }
+        .batches {
+            padding-top: 2vw;
+            width: 92vw;
+            max-height: 0;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            &.selected {
+                transition: 0.25s ease-in-out;
+                opacity: 1;
+                visibility: visible;
+                height: auto;
+                max-height: 100vh;
+            }
+            .batch {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 92vw;
+                height: 30vw;
+                background: $offwhite;
+
+                border-style: solid none none none;
+                border-width: 1px;
+                border-color: $grey_;
+                a {
+                    text-decoration: none;
+                    color: $grey;
+                    padding: 2vw 0 2vw 0;
+                    width: 92vw;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    .icon {
+                        align-self: flex-start;
+                        width: 10vw;
+                        font-size: 6vw;
+                    }
+                    .inner {
+                        flex: 1;
+                        color: $grey_8;
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-start;
+                        flex-direction: column;
+                        .details {
+                            color: $grey;
+                            font-weight: bold;
+                            margin-top: 2vw;
+                            font-size: 3.5vw;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

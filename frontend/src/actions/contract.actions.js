@@ -1,11 +1,11 @@
-import config from "config";
 import { getStringFromRole, getRoleFromString } from "../helpers";
 import { alertActions } from "./";
 import { contractConstants } from "../constants";
+import { contractService } from "../services";
 
 export const contractActions = {
-    getRole,
     clean,
+    getRole,
     makeCoordinator,
     startCampaign,
     addManufacturers,
@@ -13,17 +13,21 @@ export const contractActions = {
     getCampaignDetails,
     createNewBatch,
     getBatchDetails,
+    getBatches,
     confirmPLAPickedUp,
     confirmPLAReceived,
     confirmMasksMade,
     confirmMasksPickedUp,
-    confirmMasksReceived
+    confirmMasksReceived,
+    getMyCampaigns,
+    cleanMyBatches,
+    getMyBatches
 };
 
 function clean() {
-    return (dispatch) => {
+    return dispatch => {
         dispatch({
-            type: contractConstants.TRANSACTION_CLEAN
+            type: contractConstants.CLEAN
         });
     };
 }
@@ -34,10 +38,7 @@ function getRole() {
         let role;
         try {
             const { account, contract } = getState().web3;
-            role = await contract.methods
-                .getRole(account)
-                .call({ from: account });
-            role = getStringFromRole(role);
+            role = await contractService.getRole(contract, account);
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
@@ -45,7 +46,6 @@ function getRole() {
             return;
         }
         dispatch(result({ role }));
-        dispatch(done());
         return role;
     };
 }
@@ -56,18 +56,65 @@ function getCampaignDetails(campaignId) {
         let campaign;
         try {
             const { account, contract } = getState().web3;
-            campaign = await contract.methods
-                .getCampaignDetalis(campaignId)
-                .call({ from: account });
+            campaign = await contractService.getCampaignDetails(
+                contract,
+                account,
+                campaignId
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Getting Campaign"));
             return;
         }
-        dispatch(alertActions.success("Got Campaign"));
-        dispatch(result({ campaign }));
-        dispatch(done());
+        dispatch(result({ data: { campaign } }));
+    };
+}
+
+function getMyCampaigns() {
+    return async (dispatch, getState) => {
+        dispatch(started());
+        let campaigns;
+        try {
+            const { account, contract } = getState().web3;
+            campaigns = await contractService.getMyCampaigns(contract, account);
+        } catch (e) {
+            console.log(e);
+            dispatch(failure(e));
+            dispatch(alertActions.error("Error Getting Campaigns"));
+            return;
+        }
+        dispatch(result({ data: { campaigns } }));
+    };
+}
+
+function cleanMyBatches() {
+    return async dispatch => {
+        dispatch(cleanSelected({ data: { batches: undefined } }));
+    }
+}
+
+function getMyBatches(campaignId) {
+    return async (dispatch, getState) => {
+        dispatch(started());
+        let batches = undefined;
+        try {
+            const { account, contract } = getState().web3;
+            batches = await contractService.getMyBatches(
+                contract,
+                account,
+                campaignId
+            );
+        } catch (e) {
+            console.log(e);
+            dispatch(failure(e));
+            dispatch(alertActions.error("Error Getting Batches"));
+            return;
+        }
+        dispatch(result({ data: { batches } }));
+        if (batches.length === 0) {
+            dispatch(alertActions.success("No Batches Found"));
+        }
     };
 }
 
@@ -77,43 +124,69 @@ function getBatchDetails(campaignId, batchId) {
         let batch;
         try {
             const { account, contract } = getState().web3;
-            batch = await contract.methods
-                .getBatchDetails(campaignId, batchId)
-                .call({ from: account });
+            batch = await contractService.getBatchDetails(
+                contract,
+                account,
+                campaignId,
+                batchId
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Getting Batch"));
             return;
         }
-        dispatch(alertActions.success("Got Batch"));
-        dispatch(result({ batch }));
-        dispatch(done());
+        dispatch(result({ data: { batch } }));
+    };
+}
+
+function getBatches(campaignId, totalBatches) {
+    return async (dispatch, getState) => {
+        dispatch(started());
+        let batches;
+        try {
+            const { account, contract } = getState().web3;
+            batches = await contractService.getBatches(
+                contract,
+                account,
+                campaignId,
+                totalBatches
+            );
+        } catch (e) {
+            console.log(e);
+            dispatch(failure(e));
+            dispatch(alertActions.error("Error Getting Batches"));
+            return;
+        }
+        dispatch(result({ data: { batches } }));
     };
 }
 
 function makeCoordinator(address) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let data;
         try {
             const { account, contract } = getState().web3;
-            receipt = await contract.methods
-                .makeCoordinator(address)
-                .send({ from: account });
+            data = await contractService.makeCoordinator(
+                contract,
+                account,
+                address
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Making Coordinator"));
             return;
         }
-        if (receipt.status) {
+        if (!data.error) {
             dispatch(alertActions.success("Made Coordinator"));
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Making Coordinator: " + e));
+            dispatch(failure(data.error));
+            dispatch(
+                alertActions.error("Error Making Coordinator: " + data.error)
+            );
         }
         return;
     };
@@ -122,7 +195,7 @@ function makeCoordinator(address) {
 function confirmPLAPickedUp(campaignId, batchId) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let data;
         let otherRole = "COURIER";
         try {
             const { account, contract } = getState().web3;
@@ -130,18 +203,20 @@ function confirmPLAPickedUp(campaignId, batchId) {
             if (role === "COURIER") {
                 otherRole = "COORDINATOR";
             }
-            receipt = await contract.methods
-                .confirmPLAPickedUpByCourier1(campaignId, batchId)
-                .send({ from: account });
+            data = await contractService.confirmPLAPickedUp(
+                contract,
+                account,
+                campaignId,
+                batchId
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Confirming Pickup"));
             return;
         }
-        if (receipt.status) {
-            let event = receipt.events["PLAPickedUpByCourier1"];
-            if (event) {
+        if (!data.error) {
+            if (data.event) {
                 dispatch(alertActions.success("PLA Picked Up Confirmed"));
             } else {
                 dispatch(
@@ -150,9 +225,10 @@ function confirmPLAPickedUp(campaignId, batchId) {
             }
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Confirming Pickup"));
+            dispatch(failure(data.error));
+            dispatch(
+                alertActions.error("Error Confirming Pickup: " + data.error)
+            );
         }
     };
 }
@@ -160,7 +236,7 @@ function confirmPLAPickedUp(campaignId, batchId) {
 function confirmPLAReceived(campaignId, batchId) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let data;
         let otherRole = "COURIER";
         try {
             const { account, contract } = getState().web3;
@@ -168,18 +244,20 @@ function confirmPLAReceived(campaignId, batchId) {
             if (role === "COURIER") {
                 otherRole = "MANUFACTURER";
             }
-            receipt = await contract.methods
-                .confirmPLARecivedByManufacturer(campaignId, batchId)
-                .send({ from: account });
+            data = await contractService.confirmPLAReceived(
+                contract,
+                account,
+                campaignId,
+                batchId
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Confirming Received"));
             return;
         }
-        if (receipt.status) {
-            let event = receipt.events["PLARecivedByManufacturer"];
-            if (event) {
+        if (!data.error) {
+            if (data.event) {
                 dispatch(alertActions.success("PLA Received Confirmed"));
             } else {
                 dispatch(
@@ -188,9 +266,10 @@ function confirmPLAReceived(campaignId, batchId) {
             }
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Confirming Received"));
+            dispatch(failure(data.error));
+            dispatch(
+                alertActions.error("Error Confirming Received: " + data.error)
+            );
         }
     };
 }
@@ -198,28 +277,32 @@ function confirmPLAReceived(campaignId, batchId) {
 function confirmMasksMade(campaignId, batchId, amountOfMasks) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let data;
         try {
             const { account, contract } = getState().web3;
-            receipt = await contract.methods
-                .confirmMasksMade(campaignId, batchId, amountOfMasks)
-                .send({ from: account });
+            data = await contractService.confirmMasksMade(
+                contract,
+                account,
+                campaignId,
+                batchId,
+                amountOfMasks
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Confirming Masks Made"));
             return;
         }
-        if (receipt.status) {
-            let event = receipt.events["MasksReady"];
-            if (event) {
-                dispatch(alertActions.success("Masks Made Confirmed"));
+        if (!data.error) {
+            if (data.event) {
+                dispatch(alertActions.success("Confirmed Masks Made"));
             }
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Confirming Masks Made"));
+            dispatch(failure(data.error));
+            dispatch(
+                alertActions.error("Error Confirming Masks Made: " + data.error)
+            );
         }
     };
 }
@@ -227,7 +310,7 @@ function confirmMasksMade(campaignId, batchId, amountOfMasks) {
 function confirmMasksPickedUp(campaignId, batchId) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let data;
         let otherRole = "COURIER";
         try {
             const { account, contract } = getState().web3;
@@ -235,18 +318,20 @@ function confirmMasksPickedUp(campaignId, batchId) {
             if (role === "COURIER") {
                 otherRole = "MANUFACTURER";
             }
-            receipt = await contract.methods
-                .confirmMasksPickedUpByCourier2(campaignId, batchId)
-                .send({ from: account });
+            data = await contractService.confirmMasksPickedUp(
+                contract,
+                account,
+                campaignId,
+                batchId
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Confirming Pickup"));
             return;
         }
-        if (receipt.status) {
-            let event = receipt.events["MasksPickedUpByCourier2"];
-            if (event) {
+        if (!data.error) {
+            if (data.event) {
                 dispatch(alertActions.success("Masks Picked Up Confirmed"));
             } else {
                 dispatch(
@@ -255,9 +340,10 @@ function confirmMasksPickedUp(campaignId, batchId) {
             }
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Confirming Pickup"));
+            dispatch(failure(data.error));
+            dispatch(
+                alertActions.error("Error Confirming Pickup: " + data.error)
+            );
         }
     };
 }
@@ -265,7 +351,7 @@ function confirmMasksPickedUp(campaignId, batchId) {
 function confirmMasksReceived(campaignId, batchId) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let data;
         let otherRole = "COURIER";
         try {
             const { account, contract } = getState().web3;
@@ -273,18 +359,20 @@ function confirmMasksReceived(campaignId, batchId) {
             if (role === "COURIER") {
                 otherRole = "RECEIVER";
             }
-            receipt = await contract.methods
-                .confirmMasksRceivedByReceiver(campaignId, batchId)
-                .send({ from: account });
+            data = await contractService.confirmMasksReceived(
+                contract,
+                account,
+                campaignId,
+                batchId
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Confirming Received"));
             return;
         }
-        if (receipt.status) {
-            let event = receipt.events["MasksRceivedByReceiver"];
-            if (event) {
+        if (!data.error) {
+            if (data.event) {
                 dispatch(alertActions.success("Masks Received Confirmed"));
             } else {
                 dispatch(
@@ -293,9 +381,10 @@ function confirmMasksReceived(campaignId, batchId) {
             }
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Confirming Received"));
+            dispatch(failure(data.error));
+            dispatch(
+                alertActions.error("Error Confirming Received: " + data.error)
+            );
         }
     };
 }
@@ -303,35 +392,35 @@ function confirmMasksReceived(campaignId, batchId) {
 function startCampaign(campaign) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let data;
         try {
             const { account, contract } = getState().web3;
-            receipt = await contract.methods
-                .startCampaign(
-                    campaign.manufacturers,
-                    campaign.couriers,
-                    campaign.receiver,
-                    campaign.totalPLA
-                )
-                .send({ from: account });
+            data = await contractService.startCampaign(
+                contract,
+                account,
+                campaign
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Starting Campaign"));
             return;
         }
-        if (receipt.status) {
-            let event = receipt.events["CampaignStarted"];
-            dispatch(
-                alertActions.success(
-                    "Started Campaign ID: " + event.returnValues.campaignId
-                )
-            );
+        if (!data.error) {
+            if (data.event) {
+                dispatch(
+                    alertActions.success(
+                        "Started Campaign ID: " +
+                            data.event.returnValues.campaignId
+                    )
+                );
+            }
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Starting Campaign"));
+            dispatch(failure(data.error));
+            dispatch(
+                alertActions.error("Error Starting Campaign: " + data.error)
+            );
         }
     };
 }
@@ -339,23 +428,23 @@ function startCampaign(campaign) {
 function addManufacturers(data) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let result;
         try {
             const { account, contract } = getState().web3;
-            receipt = await contract.methods
-                .addManufacturers(data.campaignId, data.manufacturers)
-                .send({ from: account });
+            result = await contractService.addManufacturers(
+                contract,
+                account,
+                data
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Adding Manufacturers"));
             return;
         }
-        if (receipt.status) {
-            printReceipt(receipt);
-            let events = receipt.events["RoleGranted"];
-            if (events) {
-                let number = Array.isArray(events) ? events.length : 1;
+        if (!result.error) {
+            if (result.event) {
+                let number = Array.isArray(event) ? event.length : 1;
                 dispatch(
                     alertActions.success(number + " Manufacturer Roles Granted")
                 );
@@ -365,9 +454,12 @@ function addManufacturers(data) {
             dispatch(alertActions.success("Added Manufacturers"));
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Adding Manufacturers"));
+            dispatch(failure(result.error));
+            dispatch(
+                alertActions.error(
+                    "Error Adding Manufacturers: " + result.error
+                )
+            );
         }
     };
 }
@@ -375,21 +467,18 @@ function addManufacturers(data) {
 function addCouriers(data) {
     return async (dispatch, getState) => {
         dispatch(started());
-        let receipt;
+        let result;
         try {
             const { account, contract } = getState().web3;
-            receipt = await contract.methods
-                .addCouriers(data.campaignId, data.couriers)
-                .send({ from: account });
+            result = await contractService.addCouriers(contract, account, data);
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Adding Couriers"));
             return;
         }
-        if (receipt.status) {
-            let events = receipt.events["RoleGranted"];
-            if (events) {
+        if (!result.error) {
+            if (result.event) {
                 let number = Array.isArray(events) ? events.length : 1;
                 dispatch(
                     alertActions.success(number + " Courier Roles Granted")
@@ -400,94 +489,79 @@ function addCouriers(data) {
             dispatch(alertActions.success("Added Couriers"));
             dispatch(done());
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Adding Couriers"));
+            dispatch(failure(result.error));
+            dispatch(
+                alertActions.error("Error Adding Couriers: " + result.error)
+            );
         }
     };
 }
 
 function createNewBatch(batch) {
     return async (dispatch, getState) => {
-        const {
-            campaignId,
-            amountOfPLA,
-            expectedAmountOfMasks,
-            tfForDeliveryToManufacturer,
-            tfForMakingMasks,
-            tfForDeliveryToReceiver,
-            courier1,
-            courier2,
-            manufacturer
-        } = batch;
         dispatch(started());
-        let receipt;
+        let result;
         try {
             const { account, contract } = getState().web3;
-            receipt = await contract.methods
-                .createNewBatch(
-                    campaignId,
-                    amountOfPLA,
-                    expectedAmountOfMasks,
-                    tfForDeliveryToManufacturer,
-                    tfForMakingMasks,
-                    tfForDeliveryToReceiver,
-                    courier1,
-                    courier2,
-                    manufacturer
-                )
-                .send({ from: account });
+            result = await contractService.createNewBatch(
+                contract,
+                account,
+                batch
+            );
         } catch (e) {
             console.log(e);
             dispatch(failure(e));
             dispatch(alertActions.error("Error Creating Batch"));
             return;
         }
-        if (receipt.status) {
-            let event = receipt.events["PLAPacked"];
+        if (!result.error) {
+            dispatch(alertActions.success("Created & Packed New Batch ID"));
             dispatch(
-                alertActions.success(
-                    "Created & Packed Batch ID: " + event.returnValues.branchId
-                )
+                result({
+                    data: {
+                        newBatchId: result.event.returnValues.branchId,
+                        newCampaignId: result.event.returnValues.campaignId
+                    }
+                })
             );
-            dispatch(result({ newBatchId: event.returnValues.branchId }));
         } else {
-            printReceipt(receipt);
-            dispatch(failure(receipt.toString()));
-            dispatch(alertActions.error("Error Creating Batch"));
+            dispatch(failure(result.error));
+            dispatch(
+                alertActions.error("Error Creating Batch: " + result.error)
+            );
         }
     };
 }
 
 function started() {
     return {
-        type: contractConstants.TRANSACTION_STARTED
+        type: contractConstants.STARTED
     };
 }
 
 function done() {
     return {
-        type: contractConstants.TRANSACTION_DONE
+        type: contractConstants.DONE
+    };
+}
+
+function cleanSelected(result) {
+    return {
+        type: contractConstants.CLEAN_SELECTED,
+        ...result
     };
 }
 
 function result(result) {
     return {
-        type: contractConstants.TRANSACTION_RESULT,
+        type: contractConstants.RESULT,
         ...result
     };
 }
 
 function failure(error) {
     return {
-        type: contractConstants.TRANSACTION_ERROR,
+        type: contractConstants.ERROR,
         error
     };
-}
-
-function printReceipt(receipt) {
-    console.log("Got Receipt");
-    Object.keys(receipt).map((key, index) => {
-        console.log(key, receipt[key]);
-    });
 }

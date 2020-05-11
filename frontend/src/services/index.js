@@ -1,1 +1,1 @@
-export { authService } from "./auth.service";
+export { contractService } from "./contract.service";

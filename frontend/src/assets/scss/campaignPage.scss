@@ -1,27 +1,6 @@
 @import "config";
 
 .campaignPageInner {
-    .iconify {
-        color: $grey;
-    }
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 2vw;
-    width: 96vw;
-    height: 100vh;
-    overflow-x: hidden;
-    .back {
-        a {
-            text-decoration: none;
-            color: $grey;
-        }
-        justify-self: flex-start;
-        align-self: flex-start;
-        margin: 2vw;
-        font-size: 8vw;
-    }
     .topBar {
         display: flex;
         justify-content: space-around;
@@ -56,8 +35,10 @@
             .data {
                 font-size: 5vw;
                 font-weight: bold;
+                margin-bottom: 1vw;
             }
             .label {
+                margin-top: 1vw;
                 text-transform: uppercase;
                 font-size: 3.5vw;
             }
@@ -166,9 +147,12 @@
             padding-bottom: 15vw;
             position: absolute;
             top: 0;
+            width: 100%;
             display: none;
             &.selected {
-                display: block;
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
             .peopleList {
                 margin-top: 2vw;
@@ -205,6 +189,117 @@
                             img {
                                 width: 100%;
                                 height: auto;
+                            }
+                        }
+                    }
+                }
+            }
+            .campaignDetails {
+                font-size: 4vw;
+                margin-top: 2vw;
+                width: 96vw;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                .title {
+                    margin-top: 2vw;
+                    text-transform: uppercase;
+                    font-size: 4vw;
+                    font-weight: bold;
+                }
+                .pie {
+                    position: relative;
+                    display: flex;
+                    justify-content: center;
+                    flex-direction: column;
+                    align-items: center;
+                    width: 100%;
+                    height: 50vw;
+                    margin-bottom: 2vw;
+                    .center {
+                        position: absolute;
+            width: 30vw;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            .data {
+                font-size: 5vw;
+                font-weight: bold;
+                margin-bottom: 1vw;
+            }
+            .label {
+                margin-top: 1vw;
+                text-transform: uppercase;
+                font-size: 3.5vw;
+            }
+                    }
+                }
+                .pieDetails {
+                    display: flex;
+                    justify-content: space-around;
+                    align-items: center;
+                    height: 10vw;
+                    width: 100%;
+                    div {
+                        text-transform: uppercase;
+                        font-size: 3vw;
+                    display: flex;
+                    justify-content: center;
+                    border-radius: 1vw;
+                    align-items: center;
+                        width: 25vw;
+                        height: 6vw;
+                        color: $white;
+                        &.remain {
+                            background: purple;
+                        }
+                        &.inProgress {
+                            background: $blue2;
+                        }
+                        &.done {
+                            background: $red;
+                        }
+                    }
+                }
+                .batch {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 96vw;
+                    height: 30vw;
+
+                    border-style: solid none none none;
+                    border-width: 1px;
+                    border-color: $grey_;
+                    a {
+                        text-decoration: none;
+                        color: $grey;
+                        padding: 2vw;
+                        width: 92vw;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            .icon {
+                                align-self: flex-start;
+                                width: 10vw;
+                                font-size: 6vw;
+                            }
+                        .inner {
+                            flex: 1;
+                            color: $grey_8;
+                            width: 100%;
+                            display: flex;
+                            justify-content: center;
+                            align-items: flex-start;
+                            flex-direction: column;
+                            .details {
+                                color: $grey;
+                                font-weight: bold;
+                                margin-top: 2vw;
+                                font-size: 3.5vw;
                             }
                         }
                     }

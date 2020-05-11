@@ -4,7 +4,12 @@ import { connect } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import { history } from "../helpers";
 import { web3Actions } from "../actions";
-import { PrivateRoute, NavBar, QRCode } from "../components/common";
+import {
+    ErrorBoundary,
+    PrivateRoute,
+    NavBar,
+    QRCode
+} from "../components/common";
 import loading from "../assets/img/loading.gif";
 const LoginPage = React.lazy(() => import("../components/pages/LoginPage"));
 const RegisterPage = React.lazy(() =>
@@ -13,12 +18,13 @@ const RegisterPage = React.lazy(() =>
 const ProfilePage = React.lazy(() => import("../components/pages/ProfilePage"));
 const LandingPage = React.lazy(() => import("../components/pages/LandingPage"));
 const HomePage = React.lazy(() => import("../components/pages/HomePage"));
+const SearchPage = React.lazy(() => import("../components/pages/SearchPage"));
+const ChatPage = React.lazy(() => import("../components/pages/ChatPage"));
+const ActionsPage = React.lazy(() => import("../components/pages/ActionsPage"));
 const CampaignPage = React.lazy(() =>
     import("../components/pages/CampaignPage")
 );
-const BatchPage = React.lazy(() =>
-    import("../components/pages/BatchPage")
-);
+const BatchPage = React.lazy(() => import("../components/pages/BatchPage"));
 
 class App extends React.Component {
     constructor(props) {
@@ -59,48 +65,66 @@ class App extends React.Component {
                 <ToastContainer closeButton={false} autoClose={5000} />
                 <QRCode open={this.props.open} />
                 <Router history={history}>
-                    <NavBar />
-                    <React.Suspense
-                        fallback={
-                            <div className="suspense">
-                                <img
-                                    className="loading"
-                                    src={loading}
+                    <ErrorBoundary key={location.pathname}>
+                        <React.Suspense
+                            fallback={
+                                <div className="suspense">
+                                    <img className="loading" src={loading} />
+                                </div>
+                            }
+                        >
+                            <Switch>
+                                <PrivateRoute
+                                    exact
+                                    path="/home"
+                                    component={HomePage}
                                 />
-                            </div>
-                        }
-                    >
-                        <Switch>
-                            <PrivateRoute
-                                exact
-                                path="/home"
-                                component={HomePage}
-                            />
-                            {/*TODO: make profile route private */}
-                            <Route
-                                exact
-                                path="/profile"
-                                component={ProfilePage}
-                            />
-                            <Route exact path="/" component={LandingPage} />
-                            <Route exact path="/login" component={LoginPage} />
-                            <Route
-                                exact
-                                path="/register"
-                                component={RegisterPage}
-                            />
-                            <Route
-                                exact
-                                path="/campaign/:id"
-                                component={CampaignPage}
-                            />
-                            <Route
-                                path="/batch"
-                                component={BatchPage}
-                            />
-                            <Redirect from="*" to="/" />
-                        </Switch>
-                    </React.Suspense>
+                                <PrivateRoute
+                                    exact
+                                    path="/actions"
+                                    component={ActionsPage}
+                                />
+                                <PrivateRoute
+                                    exact
+                                    path="/search"
+                                    component={SearchPage}
+                                />
+                                <PrivateRoute
+                                    exact
+                                    path="/chat"
+                                    component={ChatPage}
+                                />
+                                {/*TODO: make profile route private */}
+                                <Route
+                                    exact
+                                    path="/profile"
+                                    component={ProfilePage}
+                                />
+                                <Route exact path="/" component={LandingPage} />
+                                <Route
+                                    exact
+                                    path="/login"
+                                    component={LoginPage}
+                                />
+                                <Route
+                                    exact
+                                    path="/register"
+                                    component={RegisterPage}
+                                />
+                                <Route
+                                    exact
+                                    path="/campaign/:id"
+                                    component={CampaignPage}
+                                />
+                                <Route
+                                    path="/batch/:campaign/:batch"
+                                    component={BatchPage}
+                                />
+                                <Redirect from="*" to="/" />
+                            </Switch>
+                        </React.Suspense>
+                        <NavBar />
+                    </ErrorBoundary>
                 </Router>
             </div>
         );
